@@ -32,17 +32,6 @@ app.use(
   })
 );
 
-// DB Code
-try {
-  mongoose.connect(MONOGO_URL);
-  console.log("Conntected to MonogDB");
-} catch (error) {
-  console.log(error);
-}
-
-// defining routes
-app.use("/api/users", userRoute);
-app.use("/api/blogs", blogRoute);
 // Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -50,6 +39,18 @@ cloudinary.config({
   api_secret: process.env.CLOUD_SECRET_KEY,
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// DB + Server
+mongoose
+  .connect(MONOGO_URL)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(port, () => console.log(`Server is running on port ${port}`));
+  })
+  .catch((error) => {
+    console.log("MongoDB connection failed:", error.message);
+    process.exit(1);
+  });
+
+// defining routes
+app.use("/api/users", userRoute);
+app.use("/api/blogs", blogRoute);

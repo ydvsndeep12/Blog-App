@@ -13,8 +13,8 @@ import Creators from "./pages/Creators";
 import { useAuth } from "./context/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import UpdateBlog from "./dashboard/UpdateBlog";
-import Detail from "./pages/Detail";
-import NotFound from "./pages/NotFound";
+import Detail from "./pages/Detail.jsx";
+//import NotFound from "./pages/NotFound";
 function App() {
   const location = useLocation();
   const hideNavbarFooter = ["/dashboard", "/login", "/register"].includes(
@@ -42,14 +42,14 @@ function App() {
         <Route exact path="/register" element={<Register />} />
         <Route exact path="/dashboard" element={<Dashboard />} />
 
+        {/* Update page route - must be before /blog/:id */}
+        <Route exact path="/blog/update/:id" element={<UpdateBlog />} />
+
         {/* Single page route */}
         <Route exact path="/blog/:id" element={<Detail />} />
 
-        {/* Update page route */}
-        <Route exact path="/blog/update/:id" element={<UpdateBlog />} />
-
         {/* Universal route */}
-        <Route path="*" element={<NotFound />} />
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       <Toaster />
       {!hideNavbarFooter && <Footer />}

@@ -1,161 +1,158 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AiOutlineMenu } from "react-icons/ai";
 import { IoCloseSharp } from "react-icons/io5";
 import { useAuth } from "../context/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
+import API_BASE from "../config";
+
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/blogs", label: "Blogs" },
+  { to: "/creators", label: "Creators" },
+  { to: "/about", label: "About" },
+  { to: "/contact", label: "Contact" },
+];
 
 function Navbar() {
   const [show, setShow] = useState(false);
-
   const { profile, isAuthenticated, setIsAuthenticated } = useAuth();
-  console.log(profile?.user);
-  const navigateTo = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.get(
-        "http://localhost:4001/api/users/logout",
-        { withCredentials: true }
-      );
-      console.log(data);
-      localStorage.removeItem("jwt"); // deleting token in localStorage so that if user logged out it will goes to login page
+      const { data } = await axios.get(`${API_BASE}/api/users/logout`, {
+        withCredentials: true,
+      });
+      localStorage.removeItem("jwt");
       toast.success(data.message);
       setIsAuthenticated(false);
-      navigateTo("/login");
-    } catch (error) {
-      console.log(error);
+      navigate("/login");
+    } catch {
       toast.error("Failed to logout");
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <>
-      <nav className=" shadow-lg px-4 py-2">
-        <div className="flex items-center justify-between container mx-auto">
-          <div className="font-semibold text-xl">
-            Cilli<span className="text-blue-500">Blog</span>
-          </div>
-          {/* Desktop */}
-          <div className=" mx-6">
-            <ul className="hidden md:flex space-x-6">
-              <Link to="/" className="hover:text-blue-500">
-                HOME
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold tracking-tight">
+          Cilli<span className="text-indigo-600">Blog</span>
+        </Link>
+
+        {/* Desktop Links */}
+        <ul className="hidden md:flex items-center gap-1">
+          {navLinks.map(({ to, label }) => (
+            <li key={to}>
+              <Link
+                to={to}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isActive(to)
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
+                }`}
+              >
+                {label}
               </Link>
-              <Link to="/blogs" className="hover:text-blue-500">
-                BLOGS
-              </Link>
-              <Link to="/creators" className="hover:text-blue-500">
-                CREATORS
-              </Link>
-              <Link to="/about" className="hover:text-blue-500">
-                ABOUT
-              </Link>
-              <Link to="/contact" className="hover:text-blue-500">
-                CONTACT
-              </Link>
-            </ul>
-            <div className="md:hidden" onClick={() => setShow(!show)}>
-              {show ? <IoCloseSharp size={24} /> : <AiOutlineMenu size={24} />}
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop Actions */}
+        <div className="hidden md:flex items-center gap-3">
+          {isAuthenticated && profile?.user?.role === "admin" && (
+            <Link
+              to="/dashboard"
+              className="text-sm font-semibold px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Dashboard
+            </Link>
+          )}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              {profile?.user?.photo?.url && (
+                <img
+                  src={profile.user.photo.url}
+                  alt="avatar"
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-200"
+                />
+              )}
+              <button
+                onClick={handleLogout}
+                className="text-sm font-semibold px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200"
+              >
+                Logout
+              </button>
             </div>
-          </div>
-          <div className="hidden md:flex space-x-2">
-            {isAuthenticated && profile?.user?.role === "admin" ? (
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm font-semibold px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Login
+            </Link>
+          )}
+        </div>
+
+        {/* Mobile Toggle */}
+        <button className="md:hidden p-2 rounded-lg hover:bg-gray-100" onClick={() => setShow(!show)}>
+          {show ? <IoCloseSharp size={22} /> : <AiOutlineMenu size={22} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {show && (
+        <div className="md:hidden bg-white border-t border-gray-100 px-4 pb-6 pt-2 space-y-1">
+          {navLinks.map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setShow(false)}
+              className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                isActive(to)
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+          <div className="pt-3 flex flex-col gap-2">
+            {isAuthenticated && profile?.user?.role === "admin" && (
               <Link
                 to="/dashboard"
-                className="bg-blue-600 text-white font-semibold hover:bg-blue-800 duration-300 px-4 py-2 rounded"
+                onClick={() => setShow(false)}
+                className="block text-center text-sm font-semibold px-4 py-2 rounded-lg bg-indigo-600 text-white"
               >
-                DASHBOARD
+                Dashboard
               </Link>
-            ) : (
-              ""
             )}
-
-            {!isAuthenticated ? (
-              <Link
-                to="/Login"
-                className="bg-red-600 text-white font-semibold hover:bg-red-800 duration-300 px-4 py-2 rounded"
+            {isAuthenticated ? (
+              <button
+                onClick={handleLogout}
+                className="text-sm font-semibold px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200"
               >
-                LOGIN
-              </Link>
+                Logout
+              </button>
             ) : (
-              <div>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 text-white font-semibold hover:bg-red-800 duration-300 px-4 py-2 rounded"
-                >
-                  LOGOUT
-                </button>
-              </div>
+              <Link
+                to="/login"
+                onClick={() => setShow(false)}
+                className="block text-center text-sm font-semibold px-4 py-2 rounded-lg bg-indigo-600 text-white"
+              >
+                Login
+              </Link>
             )}
           </div>
         </div>
-        {/* mobile navbar */}
-        {show && (
-          <div className="bg-white">
-            <ul className="flex flex-col h-screen items-center justify-center space-y-3 md:hidden text-xl">
-              <Link
-                to="/"
-                onClick={() => setShow(!show)}
-                smooth="true"
-                duration={500}
-                offset={-70}
-                activeClass="active"
-                className="hover:text-blue-500"
-              >
-                HOME
-              </Link>
-              <Link
-                to="/blogs"
-                onClick={() => setShow(!show)}
-                smooth="true"
-                duration={500}
-                offset={-70}
-                activeClass="active"
-                className="hover:text-blue-500"
-              >
-                BLOGS
-              </Link>
-              <Link
-                to="/creators"
-                onClick={() => setShow(!show)}
-                smooth="true"
-                duration={500}
-                offset={-70}
-                activeClass="active"
-                className="hover:text-blue-500"
-              >
-                CREATORS
-              </Link>
-              <Link
-                to="/about"
-                onClick={() => setShow(!show)}
-                smooth="true"
-                duration={500}
-                offset={-70}
-                activeClass="active"
-                className="hover:text-blue-500"
-              >
-                ABOUT
-              </Link>
-              <Link
-                to="/contact"
-                onClick={() => setShow(!show)}
-                smooth="true"
-                duration={500}
-                offset={-70}
-                activeClass="active"
-                className="hover:text-blue-500"
-              >
-                CONTACT
-              </Link>
-            </ul>
-          </div>
-        )}
-      </nav>
-    </>
+      )}
+    </nav>
   );
 }
 

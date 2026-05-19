@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
+import API_BASE from "../config";
 
 function Register() {
   const { isAuthenticated, setIsAuthenticated, setProfile } = useAuth();
@@ -41,7 +42,7 @@ function Register() {
     formData.append("photo", photo);
     try {
       const { data } = await axios.post(
-        "http://localhost:4001/api/users/register",
+        `${API_BASE}/api/users/register`,
         formData,
         {
           withCredentials: true,
@@ -66,9 +67,9 @@ function Register() {
       navigateTo("/");
     } catch (error) {
       console.log(error);
-      toast.error(
-        error.response.data.message || "Please fill the required fields"
-      );
+      // toast.error(
+      //   error.response.data.message || "Please fill the required fields"
+      // );
     }
   };
 

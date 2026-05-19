@@ -1,57 +1,72 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import API_BASE from "../config";
 
 function Creators() {
   const [creators, setCreators] = useState([]);
-  console.log(creators);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchCreators = async () => {
-      try {
-        const { data } = await axios.get(
-          "http://localhost:4001/api/users/admins",
-          {
-            withCredentials: true,
-          }
-        );
-        setCreators(data.admins);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchCreators();
+    axios
+      .get(`${API_BASE}/api/users/admins`, { withCredentials: true })
+      .then(({ data }) => setCreators(data.admins))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div className="flex flex-wrap justify-center items-center my-20 bg-gray-100">
-      {creators.map((creator) => (
-        <div
-          key={creator._id}
-          className="bg-white shadow-lg rounded-lg overflow-hidden max-w-xs w-full m-2"
-        >
-          <div className="relative">
-            <img
-              src={creator.photo.url}
-              alt="avatar"
-              className="w-full h-32 object-cover"
-            />
-            <div className="absolute inset-x-0 bottom-0 transform translate-y-1/2">
-              <img
-                src={creator.photo.url}
-                alt="avatar"
-                className="w-16 h-16 rounded-full mx-auto border-4 border-gray-700"
-              />
-            </div>
-          </div>
-          <div className="px-4 py-6 mt-4">
-            <h2 className="text-center text-xl font-semibold text-gray-800">
-              {creator.name}
-            </h2>
-            <p className="text-center text-gray-600 mt-2">{creator.email}</p>
-            <p className="text-center text-gray-600 mt-2">{creator.phone}</p>
-            <p className="text-center text-gray-600 mt-2">{creator.role}</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 py-14 px-4 text-center text-white">
+        <h1 className="text-4xl md:text-5xl font-bold mb-3">Our Creators</h1>
+        <p className="text-indigo-100 text-lg max-w-xl mx-auto">
+          Meet the talented writers and storytellers behind CilliBlog.
+        </p>
+      </div>
+
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {loading
+            ? [...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm animate-pulse">
+                  <div className="h-28 bg-gray-200" />
+                  <div className="flex flex-col items-center -mt-10 pb-6 px-4">
+                    <div className="w-20 h-20 rounded-full bg-gray-300 border-4 border-white" />
+                    <div className="h-3 w-24 bg-gray-200 rounded mt-4" />
+                    <div className="h-2 w-16 bg-gray-100 rounded mt-2" />
+                  </div>
+                </div>
+              ))
+            : creators.map((creator) => (
+                <div
+                  key={creator._id}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+                >
+                  {/* Cover */}
+                  <div className="h-28 bg-gradient-to-r from-indigo-400 to-purple-500" />
+
+                  {/* Avatar + Info */}
+                  <div className="flex flex-col items-center -mt-10 pb-6 px-4">
+                    <img
+                      src={creator.photo.url}
+                      alt={creator.name}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md group-hover:ring-4 group-hover:ring-indigo-200 transition-all duration-300"
+                    />
+                    <h2 className="mt-3 text-lg font-bold text-gray-800">{creator.name}</h2>
+                    <span className="text-xs font-semibold text-indigo-500 capitalize bg-indigo-50 px-3 py-1 rounded-full mt-1">
+                      {creator.role}
+                    </span>
+                    <div className="mt-3 space-y-1 text-center">
+                      <p className="text-sm text-gray-500">{creator.email}</p>
+                      {creator.phone && (
+                        <p className="text-sm text-gray-500">{creator.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import API_BASE from "./config";
 
 export const AuthContext = createContext();
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
         console.log(token);
         if (token) {
           const { data } = await axios.get(
-            "http://localhost:4001/api/users/my-profile",
+            `${API_BASE}/api/users/my-profile`,
             {
               withCredentials: true,
               headers: {
@@ -24,7 +25,7 @@ export const AuthProvider = ({ children }) => {
               },
             }
           );
-          console.log(data.user);
+          console.log("user profile",data.user);
           setProfile(data.user);
           setIsAuthenticated(true);
         }
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     const fetchBlogs = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:4001/api/blogs/all-blogs",
+          `${API_BASE}/api/blogs/all-blogs`,
           { withCredentials: true }
         );
         console.log(data);
